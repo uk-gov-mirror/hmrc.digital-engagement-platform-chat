@@ -1,6 +1,6 @@
 package uk.gov.hmrc.webchat.services
 
-import com.google.inject.Inject
+import com.google.inject.{ImplementedBy, Inject}
 import play.api.Logging
 import play.api.mvc.{ActionBuilder, ActionFunction, AnyContent, BodyParser, MessagesControllerComponents, Request, Result}
 import uk.gov.hmrc.auth.core.retrieve.Retrieval
@@ -31,4 +31,5 @@ class AuthServiceImpl @Inject() (val authConnector: AuthConnector,
   override def parser: BodyParser[AnyContent] = mcc.parsers.defaultBodyParser
 }
 
+@ImplementedBy(classOf[AuthServiceImpl])
 trait AuthService extends ActionBuilder[AuthenticatedRequest, AnyContent] with ActionFunction[Request, Request]
