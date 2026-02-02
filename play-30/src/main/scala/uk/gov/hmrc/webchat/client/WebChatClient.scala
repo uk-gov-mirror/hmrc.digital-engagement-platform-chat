@@ -21,17 +21,20 @@ import play.api.Logging
 import play.api.mvc.Request
 import play.twirl.api.Html
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
-import uk.gov.hmrc.webchat.models.EncryptedNuanceData
+import uk.gov.hmrc.webchat.controllers.AuthFunction
+import uk.gov.hmrc.webchat.models.{EncryptedNuanceData}
 import uk.gov.hmrc.webchat.services.NuanceEncryptionService
 import uk.gov.hmrc.webchat.views.html.{HMRCEmbeddedView, HMRCPopupView, NuanceTagElementView, NuanceView}
 
 import javax.inject.Inject
+import scala.concurrent.ExecutionContext
 
 class WebChatClient @Inject()(nuanceEncryptionService: NuanceEncryptionService,
                               requiredElements: NuanceView,
                               popupChatSkinElement: HMRCPopupView,
                               embeddedChatSkinElement: HMRCEmbeddedView,
-                              nuanceContainerElement: NuanceTagElementView) extends Logging {
+                              nuanceContainerElement: NuanceTagElementView,
+                              authFunction: AuthFunction)(implicit executionContext: ExecutionContext) extends Logging {
 
   def loadRequiredElements()(implicit request: Request[_]): Option[Html] = {
     Some(withCSPNonce(requiredElements(encryptedNuanceData)))
@@ -49,11 +52,14 @@ class WebChatClient @Inject()(nuanceEncryptionService: NuanceEncryptionService,
     Some(withCSPNonce(nuanceContainerElement(id)))
   }
 
-  private def encryptedNuanceData(implicit request: Request[_]) =
+  private def encryptedNuanceData(implicit request: Request[_]) = {
+    val future = authFunction.getEnrolments(request, HeaderCarrierConverter.fromRequestAndSession(request, request.session))
     EncryptedNuanceData.create(
       nuanceEncryptionService,
-      HeaderCarrierConverter.fromRequestAndSession(request, request.session)
+      HeaderCarrierConverter.fromRequestAndSession(request, request.session),
+      future.value.get.get
     )
+  }
 
   private def withCSPNonce(fragment: Html)(implicit request: Request[_]): Html =
     Html(fragment.body.replace("{{NONCE_ATTR}}", views.html.helper.CSPNonce.attr.body))
