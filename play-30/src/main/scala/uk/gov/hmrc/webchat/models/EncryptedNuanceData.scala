@@ -20,7 +20,6 @@ import com.google.inject.Inject
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.webchat.services.NuanceEncryptionService
 
-import scala.concurrent.Future
 
 case class EncryptedNuanceData @Inject()(nuanceSessionId: String, mdtpSessionId: String, deviceId: String, enrolments: String)
 
@@ -31,7 +30,8 @@ object EncryptedNuanceData {
       cryptoService.nuanceSafeHash(sessionId(hc)),
       cryptoService.encryptField(sessionId(hc)),
       cryptoService.encryptField(deviceId(hc)),
-      cryptoService.encryptField(userProfile.enrolments.toString))
+      cryptoService.encryptField(userProfile.enrolments.toString)
+    )
   }
 
   private def sessionId(hc: HeaderCarrier): String = hc.sessionId.fold("")(_.value)
