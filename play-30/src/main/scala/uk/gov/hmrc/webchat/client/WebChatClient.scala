@@ -37,9 +37,10 @@ class WebChatClient @Inject()(nuanceEncryptionService: NuanceEncryptionService,
                              )(implicit ec: ExecutionContext) extends Logging {
 
   def loadRequiredElements()(implicit request: Request[_]): Option[Html] = {
+    val sessionId = encryptedNuanceData.nuanceSessionId
     logger.info("INSIDE loadRequiredElements")
     webChatVerificationService
-      .verifyUser()
+      .verifyUser(sessionId)
       .recover {
         case ex =>
           logger.error("Webchat verification failed, continuing to load chat", ex)
@@ -54,7 +55,7 @@ class WebChatClient @Inject()(nuanceEncryptionService: NuanceEncryptionService,
       case "embedded" => Some(withCSPNonce(embeddedChatSkinElement()))
       case partialType =>
         logger.warn(s"invalid partial type '$partialType' passed to loadHMRCChatSkinElement, defaulting to popup")
-       Some(withCSPNonce(popupChatSkinElement(id)))
+        Some(withCSPNonce(popupChatSkinElement(id)))
     }
   }
   def loadWebChatContainer(id: String = "HMRC_Fixed_1")(implicit request: Request[_]) : Option[Html] = {
@@ -70,3 +71,4 @@ class WebChatClient @Inject()(nuanceEncryptionService: NuanceEncryptionService,
   private def withCSPNonce(fragment: Html)(implicit request: Request[_]): Html =
     Html(fragment.body.replace("{{NONCE_ATTR}}", views.html.helper.CSPNonce.attr.body))
 }
+
