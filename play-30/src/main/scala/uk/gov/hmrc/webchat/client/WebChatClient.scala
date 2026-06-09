@@ -41,18 +41,18 @@ class WebChatClient @Inject()(nuanceEncryptionService: NuanceEncryptionService,
   def loadRequiredElements()(implicit request: Request[_]): Option[Html] = {
     Some(withCSPNonce(requiredElements(encryptedNuanceData)))
   }
-  
-  def loadRequiredElementsWIthAuth()(implicit request: Request[_]): Future[Option[Html]] ={
+
+  def loadRequiredElementsWIthAuth()(implicit request: Request[_]): Future[Option[Html]] = {
     implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
-    
+
     retrieveUserProfile()
       .map {
-      profile => 
+      profile =>
         logger.info(s"Retrieved webchat user profile: ${profile.toLogString}")
         Some(withCSPNonce(requiredElements(encryptedNuanceData)))
     }
   }
-  
+
   
   def loadHMRCChatSkinElement(partialType: String, id: String = "")(implicit request: Request[_]): Option[Html] = {
     partialType match {
