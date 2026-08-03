@@ -33,13 +33,13 @@ class AuthUserProfileProvider @Inject()(
   extends UserProfileProvider
     with AuthorisedFunctions {
 
-  override def retrieveUserProfile()(implicit request: Request[_]): Future[UserProfile] = {
+  override def retrieveUserProfile(sessionId: String)(implicit request: Request[_]): Future[UserProfile] = {
     implicit val hc: HeaderCarrier =
       HeaderCarrierConverter.fromRequestAndSession(request, request.session)
 
     authorised()
       .retrieve(Retrievals.allEnrolments) { enrolments =>
-        Future.successful(UserProfile.from(enrolments.enrolments))
+        Future.successful(UserProfile.from(enrolments.enrolments, sessionId))
       }
   }
 }

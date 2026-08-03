@@ -35,7 +35,7 @@ class WebChatVerificationService @Inject()(
   extends Logging {
 
 
-  def verifyUser()(implicit request: Request[_]): Future[Unit] = {
+  def verifyUser(sessionId: String)(implicit request: Request[_]): Future[Unit] = {
 
     implicit val hc: HeaderCarrier =
       HeaderCarrierConverter.fromRequestAndSession(request, request.session)
@@ -43,7 +43,7 @@ class WebChatVerificationService @Inject()(
     logger.info("Starting webchat authentication")
 
     userProfileProvider
-      .retrieveUserProfile()
+      .retrieveUserProfile(sessionId)
       .flatMap { profile =>
 
         logger.info(s"Retrieved profile: ${profile.toLogString}")

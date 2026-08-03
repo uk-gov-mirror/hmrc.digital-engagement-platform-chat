@@ -16,13 +16,15 @@
 
 package uk.gov.hmrc.webchat.services
 
+import com.google.inject.ImplementedBy
 import play.api.mvc.Request
 import uk.gov.hmrc.webchat.models.UserProfile
 
 import scala.concurrent.Future
 
+@ImplementedBy(classOf[AuthUserProfileProvider])
 trait UserProfileProvider {
 
-  def retrieveUserProfile()(implicit request: Request[_]): Future[UserProfile]
+  def retrieveUserProfile(sessionId: String)(implicit request: Request[_]): Future[UserProfile]
 
 }
