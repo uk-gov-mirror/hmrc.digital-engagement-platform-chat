@@ -8,6 +8,7 @@ import org.scalatestplus.mockito.MockitoSugar
 import org.scalatest.wordspec.AnyWordSpec
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
+import uk.gov.hmrc.auth.core.ConfidenceLevel.L250
 import uk.gov.hmrc.auth.core.{AuthorisationException, NoActiveSession}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.webchat.connectors.VerificationConnector
@@ -42,11 +43,12 @@ class WebChatVerificationServiceSpec
             "Activated",
             Map("MTDITID" -> "12345")
           )
-        )
+        ),
+        confidenceLevel = L250
       )
 
       when(
-        userProfileProvider.retrieveUserProfile()(anyArg())
+        userProfileProvider.retrieveUserProfile(anyArg[String])(anyArg())
       ).thenReturn(
         Future.successful(profile)
       )
@@ -60,7 +62,7 @@ class WebChatVerificationServiceSpec
       )
 
 
-      service.verifyUser().futureValue
+      service.verifyUser("test-user-id").futureValue
 
 
       verify(verificationConnector)
@@ -76,14 +78,14 @@ class WebChatVerificationServiceSpec
       implicit val request = FakeRequest("GET", "/")
 
       when(
-        userProfileProvider.retrieveUserProfile()(anyArg())
+        userProfileProvider.retrieveUserProfile(anyArg[String])(anyArg())
       ).thenReturn(
         Future.failed(
           new uk.gov.hmrc.auth.core.MissingBearerToken()
         )
       )
 
-      service.verifyUser().futureValue mustBe ()
+      service.verifyUser("test-user-id").futureValue mustBe ()
 
       verifyNoInteractions(verificationConnector)
     }
@@ -96,14 +98,14 @@ class WebChatVerificationServiceSpec
       implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("GET", "/")
 
       when(
-        userProfileProvider.retrieveUserProfile()(anyArg())
+        userProfileProvider.retrieveUserProfile(anyArg[String])(anyArg())
       ).thenReturn(
         Future.failed(
           new TimeoutException("Identity retrieval timeout")
         )
       )
 
-      service.verifyUser().futureValue mustBe()
+      service.verifyUser("test-user-id").futureValue mustBe()
 
       verifyNoInteractions(verificationConnector)
     }
@@ -116,7 +118,7 @@ class WebChatVerificationServiceSpec
       implicit val request = FakeRequest("GET", "/")
 
       when(
-        userProfileProvider.retrieveUserProfile()(anyArg())
+        userProfileProvider.retrieveUserProfile(anyArg[String])(anyArg())
       ).thenReturn(
         Future.failed(
           UpstreamErrorResponse(
@@ -127,7 +129,7 @@ class WebChatVerificationServiceSpec
         )
       )
 
-      service.verifyUser().futureValue mustBe()
+      service.verifyUser("test-user-id").futureValue mustBe()
 
       verifyNoInteractions(verificationConnector)
     }
@@ -140,14 +142,14 @@ class WebChatVerificationServiceSpec
       implicit val request = FakeRequest("GET", "/")
 
       when(
-        userProfileProvider.retrieveUserProfile()(anyArg())
+        userProfileProvider.retrieveUserProfile(anyArg[String])(anyArg())
       ).thenReturn(
         Future.failed(
           new RuntimeException("Invalid upstream response")
         )
       )
 
-      service.verifyUser().futureValue mustBe()
+      service.verifyUser("test-user-id").futureValue mustBe()
 
       verifyNoInteractions(verificationConnector)
     }

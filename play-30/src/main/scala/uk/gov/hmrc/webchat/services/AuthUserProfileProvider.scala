@@ -18,9 +18,10 @@ package uk.gov.hmrc.webchat.services
 
 import play.api.mvc.Request
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
+import uk.gov.hmrc.auth.core.retrieve.{ItmpName, ~}
 
 import javax.inject.Inject
-import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions}
+import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions, ConfidenceLevel}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
 import uk.gov.hmrc.webchat.models.UserProfile
@@ -38,8 +39,20 @@ class AuthUserProfileProvider @Inject()(
       HeaderCarrierConverter.fromRequestAndSession(request, request.session)
 
     authorised()
-      .retrieve(Retrievals.allEnrolments) { enrolments =>
-        Future.successful(UserProfile.from(enrolments.enrolments, sessionId))
+      .retrieve(
+        Retrievals.allEnrolments and Retrievals.confidenceLevel
+        //and Retrievals.itmpName
+      ) {
+        case enrolments ~ (confidenceLevel: ConfidenceLevel) =>
+
+          val profile = UserProfile.from(
+            enrolments.enrolments,
+            sessionId,
+            confidenceLevel
+            //itmpName
+          )
+
+          Future.successful(profile)
       }
   }
 }
