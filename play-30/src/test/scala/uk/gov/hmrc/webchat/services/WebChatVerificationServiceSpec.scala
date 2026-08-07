@@ -1,6 +1,6 @@
 package uk.gov.hmrc.webchat.services
 
-import org.mockito.ArgumentMatchers.any as anyArg
+import org.mockito.ArgumentMatchers.{any => anyArg}
 import org.mockito.Mockito.*
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.must.Matchers.mustBe
