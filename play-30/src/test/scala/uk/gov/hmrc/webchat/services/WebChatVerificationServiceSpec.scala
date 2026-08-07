@@ -3,13 +3,13 @@ package uk.gov.hmrc.webchat.services
 import org.mockito.ArgumentMatchers.any as anyArg
 import org.mockito.Mockito.*
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.matchers.must.Matchers.{mustBe, noException, thrownBy}
+import org.scalatest.matchers.must.Matchers.mustBe
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatest.wordspec.AnyWordSpec
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import uk.gov.hmrc.auth.core.ConfidenceLevel.L250
-import uk.gov.hmrc.auth.core.{AuthorisationException, NoActiveSession}
+import uk.gov.hmrc.auth.core.MissingBearerToken
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.webchat.connectors.VerificationConnector
 import uk.gov.hmrc.webchat.models.{UserEnrolment, UserProfile}
@@ -33,7 +33,7 @@ class WebChatVerificationServiceSpec
 
       val (service, userProfileProvider, verificationConnector) = createService()
 
-      implicit val request = FakeRequest("GET", "/")
+      implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("GET", "/")
 
       val profile = UserProfile(
         "test-user-id",
@@ -75,13 +75,12 @@ class WebChatVerificationServiceSpec
 
       val (service, userProfileProvider, verificationConnector) = createService()
 
-      implicit val request = FakeRequest("GET", "/")
+      implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("GET", "/")
 
       when(
         userProfileProvider.retrieveUserProfile(anyArg[String])(anyArg())
       ).thenReturn(
-        Future.failed(
-          new uk.gov.hmrc.auth.core.MissingBearerToken()
+        Future.failed(MissingBearerToken()
         )
       )
 
@@ -115,7 +114,7 @@ class WebChatVerificationServiceSpec
       val (service, userProfileProvider, verificationConnector) =
         createService()
 
-      implicit val request = FakeRequest("GET", "/")
+      implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("GET", "/")
 
       when(
         userProfileProvider.retrieveUserProfile(anyArg[String])(anyArg())
@@ -139,7 +138,7 @@ class WebChatVerificationServiceSpec
       val (service, userProfileProvider, verificationConnector) =
         createService()
 
-      implicit val request = FakeRequest("GET", "/")
+      implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("GET", "/")
 
       when(
         userProfileProvider.retrieveUserProfile(anyArg[String])(anyArg())
