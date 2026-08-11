@@ -21,6 +21,7 @@ import play.api.Logging
 import play.api.mvc.Request
 import play.twirl.api.Html
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
+import uk.gov.hmrc.webchat.config.WebChatConfig
 import uk.gov.hmrc.webchat.models.EncryptedNuanceData
 import uk.gov.hmrc.webchat.services.{NuanceEncryptionService, WebChatVerificationService}
 import uk.gov.hmrc.webchat.views.html.{HMRCEmbeddedView, HMRCPopupView, NuanceTagElementView, NuanceView}
@@ -33,17 +34,21 @@ class WebChatClient @Inject()(nuanceEncryptionService: NuanceEncryptionService,
                               popupChatSkinElement: HMRCPopupView,
                               embeddedChatSkinElement: HMRCEmbeddedView,
                               nuanceContainerElement: NuanceTagElementView,
-                              webChatVerificationService: WebChatVerificationService
+                              webChatVerificationService: WebChatVerificationService,
+                              appConfig: WebChatConfig
                              )(implicit ec: ExecutionContext) extends Logging {
 
   def loadRequiredElements()(implicit request: Request[_]): Option[Html] = {
     val sessionId = encryptedNuanceData.nuanceSessionId
     logger.info("INSIDE loadRequiredElements")
-    webChatVerificationService
-      .verifyUser(sessionId)
-      .recover {
-        case ex =>
-          logger.error("Webchat verification failed, continuing to load chat", ex)
+    if(appConfig.isIDNVenabled)
+      {
+        webChatVerificationService
+          .verifyUser(sessionId)
+          .recover {
+            case ex =>
+              logger.error("Webchat verification failed, continuing to load chat", ex)
+          }
       }
     Some(withCSPNonce(requiredElements(encryptedNuanceData)))
   }
